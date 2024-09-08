@@ -12,6 +12,13 @@ import (
 
 var configFlags = genericclioptions.NewConfigFlags(true)
 
+// following are just example placeholders, replace it with your values
+// you can get it by running "kubectl get secret -n <namespace>"
+const (
+	helmReleaseSecretName = "sh.helm.release.v1.spin-operator.v1"
+	helmReleaseNamespace  = "spin-operator"
+)
+
 func main() {
 	kubeclient, err := getKubernetesClientset()
 	if err != nil {
@@ -19,8 +26,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	storage := driver.NewSecrets(kubeclient.CoreV1().Secrets("spin-operator"))
-	releaseMd, err := storage.Get("sh.helm.release.v1.spin-operator.v1")
+	storage := driver.NewSecrets(kubeclient.CoreV1().Secrets(helmReleaseNamespace))
+	releaseMd, err := storage.Get(helmReleaseSecretName)
 	if err != nil {
 		fmt.Println("ERROR: ", err)
 		os.Exit(1)
@@ -31,7 +38,7 @@ func main() {
 	//make changes that you want to make to the release metadata and then
 	releaseMd.SetStatus(release.StatusDeployed, "deployed successfully")
 
-	err = storage.Update("sh.helm.release.v1.spin-operator.v1", releaseMd)
+	err = storage.Update(helmReleaseSecretName, releaseMd)
 	if err != nil {
 		fmt.Println("ERROR: ", err)
 		os.Exit(1)
